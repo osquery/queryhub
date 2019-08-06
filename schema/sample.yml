@@ -1,0 +1,33 @@
+---
+author: me
+detection: harden against Mimikatz attacks
+industry: all
+version: 1.0
+link: https://attack.mitre.org/techniques/T1003/
+notes:
+tags:
+- it_operations
+- mimikatz
+- harden
+- t1003
+- windows
+- credential_access
+queries:
+  attack test(s): |
+    reg add HKLM\SYSTEM\CurrentControlSet\Control\LSA /v RunAsPPL /t REG_DWORD /d 1 /f 
+  description: Starting with Windows 8, 10, and 2012 R2 lsass.exe can be forced to run as a protected process and hashes are no longer stored in memory. Lsass
+    does not run as a protected process out-of-the-box as it could cause compatibility problems with some applications. Test before deploying this setting
+    across your enterprise. 
+    When you run this query, the expected results would return the RunAsPPL key set to 1. If no results are returned, we recommend that you put this IT hygiene policy
+    in place via GPO to limit your risk of credential theft. 
+  interval: 86400
+  min_os_query_version: 3.2
+  query:
+    8a074421-37e1-40e1-b8fa-eac2a92ce51d: SELECT CASE cnt WHEN 0 THEN "DISABLED" END "LSA Protection" FROM (SELECT data,COUNT(path) AS cnt FROM registry WHERE path = 'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa\RunAsPPL' AND data = 1) WHERE cnt = 0;
+  score: 95
+  status: production
+  supported platform(s):
+    - windows
+  title: Credential Theft Hardening - LSA Run as Protected Process
+type: it_hygiene
+...
